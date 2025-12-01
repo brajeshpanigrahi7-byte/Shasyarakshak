@@ -1,0 +1,7 @@
+{
+  "name": "Shasyarakshak",
+  "description": "AI-powered crop disease diagnosis for Odisha farmers. Supports Paddy and Millets with multilingual advisory.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
