@@ -90,7 +90,7 @@ const KVKFinder: React.FC<KVKFinderProps> = ({ content, lang }) => {
   );
 
   return (
-    <div className="bg-yellow-50 p-6 rounded-2xl border border-yellow-200">
+    <div className="bg-yellow-50 dark:bg-slate-800 p-6 rounded-2xl border border-yellow-200 dark:border-slate-700">
       <div className="flex items-center gap-2 mb-4">
         <MapPin className="w-6 h-6 text-yellow-700" />
         <h3 className={`text-xl font-bold text-yellow-800 ${isOdia ? 'font-odia' : ''}`}>

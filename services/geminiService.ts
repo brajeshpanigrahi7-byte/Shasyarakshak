@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
-import { DiagnosisResult } from "../types";
+import { DiagnosisResult, CropType } from "../types";
 
 const genAI = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
@@ -71,11 +71,23 @@ const diagnosisSchema: Schema = {
   ],
 };
 
-export async function analyzeCropImage(base64Image: string): Promise<DiagnosisResult> {
+export async function analyzeCropImage(
+  base64Image: string,
+  cropType: CropType = 'auto'
+): Promise<DiagnosisResult> {
   const model = "gemini-2.5-flash"; // Using standard flash for VQA/Analysis
+
+  const cropHint =
+    cropType === 'paddy'
+      ? 'The farmer has indicated this is a Paddy (Rice) crop — prioritize rice-specific diseases and pests (e.g., Rice Blast, Brown Plant Hopper, Sheath Blight, Bacterial Leaf Blight) unless the image clearly shows otherwise.'
+      : cropType === 'millet'
+      ? 'The farmer has indicated this is a Millet crop (Ragi/Finger Millet, Bajra/Pearl Millet, etc.) — prioritize millet-specific diseases and pests (e.g., Ragi Blast, Downy Mildew, Stem Borer) unless the image clearly shows otherwise.'
+      : 'The crop type was not specified — first identify whether this is Paddy, Millet, or another crop before diagnosing.';
 
   const prompt = `
     You are an expert agricultural plant pathologist specializing in crops grown in Odisha, India, specifically Paddy (Rice) and Millets (Ragi, Bajra, etc.).
+
+    ${cropHint}
     
     Analyze the provided image of a crop leaf or plant part.
     1. Identify if there is any disease or pest (e.g., Rice Blast, Brown Plant Hopper, Sheath Blight, Ragi Blast, Stem Borer).

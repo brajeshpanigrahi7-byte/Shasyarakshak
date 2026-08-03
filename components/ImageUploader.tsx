@@ -1,9 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { Camera, Upload, Image as ImageIcon } from 'lucide-react';
-import { UIContent, Language } from '../types';
+import { UIContent, Language, CropType } from '../types';
 
 interface ImageUploaderProps {
-  onImageSelected: (base64: string) => void;
+  onImageSelected: (base64: string, cropType: CropType) => void;
   content: UIContent;
   lang: Language;
 }
@@ -11,6 +11,7 @@ interface ImageUploaderProps {
 const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelected, content, lang }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [cropType, setCropType] = useState<CropType>('auto');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -25,7 +26,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelected, content,
       const base64String = reader.result as string;
       // Remove data URL prefix (e.g. "data:image/jpeg;base64,") to get raw base64
       const base64Data = base64String.split(',')[1];
-      onImageSelected(base64Data);
+      onImageSelected(base64Data, cropType);
     };
     reader.readAsDataURL(file);
   };
@@ -54,10 +55,31 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelected, content,
         className="hidden"
       />
 
+      <div className="mb-5">
+        <p className={`text-sm font-medium text-slate-600 dark:text-slate-300 mb-2 ${lang === Language.ODIA ? 'font-odia' : ''}`}>
+          {content.cropSelectLabel}
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          {(['paddy', 'millet', 'auto'] as CropType[]).map((c) => (
+            <button
+              key={c}
+              onClick={() => setCropType(c)}
+              className={`py-2 rounded-lg text-sm font-semibold border transition-colors ${
+                cropType === c
+                  ? 'bg-emerald-600 border-emerald-600 text-white'
+                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-emerald-400'
+              } ${lang === Language.ODIA ? 'font-odia' : ''}`}
+            >
+              {c === 'paddy' ? content.cropPaddy : c === 'millet' ? content.cropMillet : content.cropAuto}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         <button
           onClick={triggerCamera}
-          className="flex flex-col items-center justify-center p-6 bg-emerald-50 border-2 border-emerald-200 rounded-xl hover:bg-emerald-100 transition-all active:scale-95 text-emerald-800"
+          className="flex flex-col items-center justify-center p-6 bg-emerald-50 dark:bg-slate-800 border-2 border-emerald-200 dark:border-slate-600 rounded-xl hover:bg-emerald-100 dark:hover:bg-slate-700 transition-all active:scale-95 text-emerald-800 dark:text-emerald-300"
         >
           <Camera className="w-10 h-10 mb-3 text-emerald-600" />
           <span className={`font-semibold ${lang === Language.ODIA ? 'font-odia text-lg' : ''}`}>
@@ -67,7 +89,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelected, content,
 
         <button
           onClick={triggerGallery}
-          className="flex flex-col items-center justify-center p-6 bg-white border-2 border-slate-200 rounded-xl hover:bg-slate-50 transition-all active:scale-95 text-slate-700"
+          className="flex flex-col items-center justify-center p-6 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-95 text-slate-700 dark:text-slate-200"
         >
           <ImageIcon className="w-10 h-10 mb-3 text-slate-500" />
           <span className={`font-semibold ${lang === Language.ODIA ? 'font-odia text-lg' : ''}`}>
@@ -76,11 +98,11 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelected, content,
         </button>
       </div>
 
-      <div className="mt-8 text-center p-6 bg-yellow-50 rounded-lg border border-yellow-100">
-        <h3 className={`text-yellow-800 font-medium mb-2 ${lang === Language.ODIA ? 'font-odia' : ''}`}>
+      <div className="mt-8 text-center p-6 bg-yellow-50 dark:bg-slate-800 rounded-lg border border-yellow-100 dark:border-slate-700">
+        <h3 className={`text-yellow-800 dark:text-yellow-400 font-medium mb-2 ${lang === Language.ODIA ? 'font-odia' : ''}`}>
           {lang === Language.ENGLISH ? 'Tips for best results:' : 'ଭଲ ଫଳାଫଳ ପାଇଁ ପରାମର୍ଶ:'}
         </h3>
-        <ul className={`text-sm text-yellow-700 space-y-1 ${lang === Language.ODIA ? 'font-odia' : ''}`}>
+        <ul className={`text-sm text-yellow-700 dark:text-yellow-500 space-y-1 ${lang === Language.ODIA ? 'font-odia' : ''}`}>
           <li>{lang === Language.ENGLISH ? '• Ensure good lighting' : '• ପର୍ଯ୍ୟାପ୍ତ ଆଲୋକରେ ଫଟୋ ନିଅନ୍ତୁ'}</li>
           <li>{lang === Language.ENGLISH ? '• Focus on the affected leaf area' : '• ରୋଗାକ୍ରାନ୍ତ ଅଂଶ ଉପରେ ଧ୍ୟାନ ଦିଅନ୍ତୁ'}</li>
           <li>{lang === Language.ENGLISH ? '• Hold the camera steady' : '• କ୍ୟାମେରା ସ୍ଥିର ରଖନ୍ତୁ'}</li>

@@ -13,3 +13,13 @@ root.render(
     <App />
   </React.StrictMode>
 );
+
+// Register the offline app-shell service worker (production/HTTPS only — Vite dev server
+// serving over HTTP on localhost is still allowed by browsers for testing).
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Non-fatal — app still works fully online without the service worker.
+    });
+  });
+}
