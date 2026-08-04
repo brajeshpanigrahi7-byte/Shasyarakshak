@@ -6,11 +6,20 @@ import BottomNav, { Tab } from './components/BottomNav';
 import HistoryView from './components/HistoryView';
 import SettingsView from './components/SettingsView';
 import WeatherWidget from './components/WeatherWidget';
+import ToolsHub from './components/ToolsHub';
+import ScreenHeader from './components/ScreenHeader';
+import FarmDoctorView from './components/FarmDoctorView';
+import VoiceAssistantView from './components/VoiceAssistantView';
+import CropCalendarView from './components/CropCalendarView';
+import ProfitCalculatorView from './components/ProfitCalculatorView';
+import FieldMonitorView from './components/FieldMonitorView';
 import { analyzeCropImage } from './services/geminiService';
 import { getHistory, saveHistoryEntry, deleteHistoryEntry, clearHistory } from './services/historyService';
 import { DiagnosisResult, Language, CropType, HistoryEntry, Theme } from './types';
 import { UI_TRANSLATIONS } from './constants';
 import { Loader2, WifiOff } from 'lucide-react';
+
+export type Screen = 'farmDoctor' | 'voiceAssistant' | 'cropCalendar' | 'profitCalculator' | 'fieldMonitor';
 
 enum AppState {
   IDLE,
@@ -27,6 +36,7 @@ const App: React.FC = () => {
   const [analysisResult, setAnalysisResult] = useState<DiagnosisResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [activeTab, setActiveTab] = useState<Tab>('home');
+  const [activeScreen, setActiveScreen] = useState<Screen | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [viewingHistoryEntry, setViewingHistoryEntry] = useState<HistoryEntry | null>(null);
   const [isOffline, setIsOffline] = useState<boolean>(typeof navigator !== 'undefined' ? !navigator.onLine : false);
@@ -144,6 +154,7 @@ const App: React.FC = () => {
     setErrorMsg('');
     setViewingHistoryEntry(null);
     setActiveTab('home');
+    setActiveScreen(null);
   };
 
   const handleSelectHistoryEntry = (entry: HistoryEntry) => {
@@ -169,6 +180,26 @@ const App: React.FC = () => {
     localStorage.removeItem('shasya_kvk_district');
   };
 
+  const screenTitle = (screen: Screen): string => {
+    switch (screen) {
+      case 'farmDoctor': return content.toolFarmDoctor;
+      case 'voiceAssistant': return content.toolVoiceAssistant;
+      case 'cropCalendar': return content.toolCropCalendar;
+      case 'profitCalculator': return content.toolProfitCalculator;
+      case 'fieldMonitor': return content.toolFieldMonitor;
+    }
+  };
+
+  const renderScreen = (screen: Screen) => {
+    switch (screen) {
+      case 'farmDoctor': return <FarmDoctorView content={content} lang={lang} />;
+      case 'voiceAssistant': return <VoiceAssistantView content={content} lang={lang} />;
+      case 'cropCalendar': return <CropCalendarView content={content} lang={lang} />;
+      case 'profitCalculator': return <ProfitCalculatorView content={content} lang={lang} />;
+      case 'fieldMonitor': return <FieldMonitorView content={content} lang={lang} />;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
       <Header 
@@ -185,8 +216,21 @@ const App: React.FC = () => {
       )}
 
       <main>
+        {/* Full-screen AI tool (Farm Doctor, Voice Assistant, Crop Calendar, Profit Calculator, Field Monitor) */}
+        {activeScreen && (
+          <div className="animate-fade-in">
+            <ScreenHeader
+              title={screenTitle(activeScreen)}
+              onBack={() => setActiveScreen(null)}
+              backLabel={content.back}
+              lang={lang}
+            />
+            {renderScreen(activeScreen)}
+          </div>
+        )}
+
         {/* Viewing a past scan from history */}
-        {viewingHistoryEntry && (
+        {!activeScreen && viewingHistoryEntry && (
           <AnalysisResultView
             result={viewingHistoryEntry.result}
             content={content}
@@ -196,7 +240,7 @@ const App: React.FC = () => {
           />
         )}
 
-        {!viewingHistoryEntry && activeTab === 'home' && (
+        {!activeScreen && !viewingHistoryEntry && activeTab === 'home' && (
           <>
             {appState === AppState.IDLE && (
               <div className="flex flex-col items-center justify-center pt-8 md:pt-16 animate-fade-in pb-24">
@@ -215,8 +259,9 @@ const App: React.FC = () => {
                   content={content}
                   lang={lang}
                 />
-                <div className="w-full max-w-md mx-auto px-4 mt-2">
+                <div className="w-full max-w-md mx-auto px-4 mt-2 space-y-5">
                   <WeatherWidget content={content} lang={lang} />
+                  <ToolsHub content={content} lang={lang} onNavigate={setActiveScreen} />
                 </div>
               </div>
             )}
@@ -266,7 +311,7 @@ const App: React.FC = () => {
           </>
         )}
 
-        {!viewingHistoryEntry && activeTab === 'history' && (
+        {!activeScreen && !viewingHistoryEntry && activeTab === 'history' && (
           <HistoryView
             entries={history}
             content={content}
@@ -277,13 +322,13 @@ const App: React.FC = () => {
           />
         )}
 
-        {!viewingHistoryEntry && activeTab === 'weather' && (
+        {!activeScreen && !viewingHistoryEntry && activeTab === 'weather' && (
           <div className="max-w-2xl mx-auto px-4 pt-6 pb-24">
             <WeatherWidget content={content} lang={lang} />
           </div>
         )}
 
-        {!viewingHistoryEntry && activeTab === 'settings' && (
+        {!activeScreen && !viewingHistoryEntry && activeTab === 'settings' && (
           <SettingsView
             content={content}
             lang={lang}
@@ -294,7 +339,7 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {!viewingHistoryEntry && appState !== AppState.ANALYZING && appState !== AppState.RESULT && (
+      {!activeScreen && !viewingHistoryEntry && appState !== AppState.ANALYZING && appState !== AppState.RESULT && (
         <BottomNav active={activeTab} onChange={setActiveTab} content={content} lang={lang} />
       )}
     </div>

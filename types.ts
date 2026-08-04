@@ -40,6 +40,84 @@ export interface WeatherSnapshot {
   fetchedAt: number;
 }
 
+// ---- Farm Doctor (personalized proactive advisory) ----
+export type SoilType = 'alluvial' | 'laterite' | 'clay' | 'sandy' | 'unknown';
+
+export interface FarmProfile {
+  district: string;
+  cropType: CropType;
+  sowingDate: string; // ISO date string
+  soilType: SoilType;
+  pastIssues: string[]; // free-text history like "Blast last season"
+}
+
+export interface FarmDoctorAdvisory {
+  headline: string;
+  headlineOdia: string;
+  riskLevel: 'Low' | 'Medium' | 'High';
+  reasoning: string;
+  reasoningOdia: string;
+  recommendedAction: string;
+  recommendedActionOdia: string;
+  generatedAt: number;
+}
+
+// ---- AI Voice/Chat Assistant ----
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  text: string;
+  timestamp: number;
+}
+
+// ---- AI Crop Calendar ----
+export interface CropCalendarTask {
+  id: string;
+  dayOffset: number; // days after sowing
+  date: string; // computed ISO date
+  category: 'fertilizer' | 'irrigation' | 'pest' | 'harvest' | 'other';
+  title: string;
+  titleOdia: string;
+  detail: string;
+  detailOdia: string;
+}
+
+export interface CropCalendarPlan {
+  crop: string;
+  sowingDate: string;
+  harvestEstimateDate: string;
+  tasks: CropCalendarTask[];
+  generatedAt: number;
+}
+
+// ---- Profit Predictor ----
+export interface ProfitCalcInput {
+  landAreaAcres: number;
+  crop: string;
+  expectedYieldQuintalsPerAcre: number;
+  pricePerQuintal: number;
+  fertilizerCost: number;
+  labourCost: number;
+  otherCost: number;
+}
+
+export interface ProfitCalcResult {
+  totalYieldQuintals: number;
+  totalIncome: number;
+  totalInvestment: number;
+  profit: number;
+  breakEvenYieldQuintals: number;
+  breakEvenPricePerQuintal: number;
+}
+
+// ---- Field Monitor (satellite roadmap placeholder) ----
+export interface FieldLocation {
+  label: string;
+  latitude: number;
+  longitude: number;
+  savedAt: number;
+}
+
 export interface UIContent {
   title: string;
   subtitle: string;
@@ -107,4 +185,80 @@ export interface UIContent {
   aboutApp: string;
   clearData: string;
   appVersion: string;
+  // Tools hub
+  toolsTitle: string;
+  toolFarmDoctor: string;
+  toolFarmDoctorDesc: string;
+  toolVoiceAssistant: string;
+  toolVoiceAssistantDesc: string;
+  toolCropCalendar: string;
+  toolCropCalendarDesc: string;
+  toolProfitCalculator: string;
+  toolProfitCalculatorDesc: string;
+  toolFieldMonitor: string;
+  toolFieldMonitorDesc: string;
+  back: string;
+  // Farm Doctor
+  farmDoctorTitle: string;
+  farmProfileSetup: string;
+  farmProfileDistrict: string;
+  farmProfileSowingDate: string;
+  farmProfileSoilType: string;
+  farmProfilePastIssues: string;
+  farmProfilePastIssuesPlaceholder: string;
+  farmProfileSave: string;
+  soilAlluvial: string;
+  soilLaterite: string;
+  soilClay: string;
+  soilSandy: string;
+  soilUnknown: string;
+  farmDoctorGenerating: string;
+  farmDoctorRefresh: string;
+  farmDoctorNoProfile: string;
+  farmDoctorEditProfile: string;
+  riskLow: string;
+  riskMedium: string;
+  riskHigh: string;
+  // Voice assistant
+  voiceAssistantTitle: string;
+  voiceAssistantPlaceholder: string;
+  voiceAssistantListening: string;
+  voiceAssistantSend: string;
+  voiceAssistantMicUnsupported: string;
+  voiceAssistantThinking: string;
+  // Crop calendar
+  cropCalendarTitle: string;
+  cropCalendarCropName: string;
+  cropCalendarCropPlaceholder: string;
+  cropCalendarSowingDate: string;
+  cropCalendarGenerate: string;
+  cropCalendarGenerating: string;
+  cropCalendarHarvestEstimate: string;
+  catFertilizer: string;
+  catIrrigation: string;
+  catPest: string;
+  catHarvest: string;
+  catOther: string;
+  // Profit calculator
+  profitTitle: string;
+  profitLandArea: string;
+  profitCrop: string;
+  profitExpectedYield: string;
+  profitPricePerQuintal: string;
+  profitFertilizerCost: string;
+  profitLabourCost: string;
+  profitOtherCost: string;
+  profitCalculate: string;
+  profitTotalYield: string;
+  profitTotalIncome: string;
+  profitTotalInvestment: string;
+  profitEstimate: string;
+  profitBreakEvenYield: string;
+  profitBreakEvenPrice: string;
+  // Field monitor
+  fieldMonitorTitle: string;
+  fieldMonitorIntro: string;
+  fieldMonitorSaveLocation: string;
+  fieldMonitorSaved: string;
+  fieldMonitorRoadmap: string;
 }
