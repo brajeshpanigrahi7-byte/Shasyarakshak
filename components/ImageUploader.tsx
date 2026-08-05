@@ -3,7 +3,7 @@ import { Camera, Upload, Image as ImageIcon } from 'lucide-react';
 import { UIContent, Language, CropType } from '../types';
 
 interface ImageUploaderProps {
-  onImageSelected: (base64: string, cropType: CropType) => void;
+  onImageSelected: (base64: string, cropType: CropType, cropName?: string) => void;
   content: UIContent;
   lang: Language;
 }
@@ -12,6 +12,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelected, content,
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
   const [cropType, setCropType] = useState<CropType>('auto');
+  const [cropName, setCropName] = useState('');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -26,7 +27,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelected, content,
       const base64String = reader.result as string;
       // Remove data URL prefix (e.g. "data:image/jpeg;base64,") to get raw base64
       const base64Data = base64String.split(',')[1];
-      onImageSelected(base64Data, cropType);
+      onImageSelected(base64Data, cropType, cropName.trim() || undefined);
     };
     reader.readAsDataURL(file);
   };
@@ -59,21 +60,30 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelected, content,
         <p className={`text-sm font-medium text-slate-600 dark:text-slate-300 mb-2 ${lang === Language.ODIA ? 'font-odia' : ''}`}>
           {content.cropSelectLabel}
         </p>
-        <div className="grid grid-cols-3 gap-2">
-          {(['paddy', 'millet', 'auto'] as CropType[]).map((c) => (
+        <div className="grid grid-cols-4 gap-2">
+          {(['paddy', 'millet', 'vegetable', 'auto'] as CropType[]).map((c) => (
             <button
               key={c}
               onClick={() => setCropType(c)}
-              className={`py-2 rounded-lg text-sm font-semibold border transition-colors ${
+              className={`py-2 rounded-lg text-xs sm:text-sm font-semibold border transition-colors ${
                 cropType === c
                   ? 'bg-emerald-600 border-emerald-600 text-white'
                   : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-emerald-400'
               } ${lang === Language.ODIA ? 'font-odia' : ''}`}
             >
-              {c === 'paddy' ? content.cropPaddy : c === 'millet' ? content.cropMillet : content.cropAuto}
+              {c === 'paddy' ? content.cropPaddy : c === 'millet' ? content.cropMillet : c === 'vegetable' ? content.cropVegetable : content.cropAuto}
             </button>
           ))}
         </div>
+        {cropType === 'vegetable' && (
+          <input
+            type="text"
+            value={cropName}
+            onChange={(e) => setCropName(e.target.value)}
+            placeholder={content.cropOtherPlaceholder}
+            className={`mt-2 w-full border border-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-white rounded-lg px-3 py-2 text-sm ${lang === Language.ODIA ? 'font-odia' : ''}`}
+          />
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">

@@ -73,7 +73,8 @@ const diagnosisSchema: Schema = {
 
 export async function analyzeCropImage(
   base64Image: string,
-  cropType: CropType = 'auto'
+  cropType: CropType = 'auto',
+  cropName?: string
 ): Promise<DiagnosisResult> {
   const model = "gemini-2.5-flash"; // Using standard flash for VQA/Analysis
 
@@ -82,10 +83,12 @@ export async function analyzeCropImage(
       ? 'The farmer has indicated this is a Paddy (Rice) crop — prioritize rice-specific diseases and pests (e.g., Rice Blast, Brown Plant Hopper, Sheath Blight, Bacterial Leaf Blight) unless the image clearly shows otherwise.'
       : cropType === 'millet'
       ? 'The farmer has indicated this is a Millet crop (Ragi/Finger Millet, Bajra/Pearl Millet, etc.) — prioritize millet-specific diseases and pests (e.g., Ragi Blast, Downy Mildew, Stem Borer) unless the image clearly shows otherwise.'
-      : 'The crop type was not specified — first identify whether this is Paddy, Millet, or another crop before diagnosing.';
+      : cropType === 'vegetable'
+      ? `The farmer has indicated this is a vegetable crop${cropName ? ` (${cropName})` : ''} — identify common vegetable diseases and pests for this crop (e.g., for tomato: Early/Late Blight, Leaf Curl Virus; for brinjal: Fruit and Shoot Borer; for onion: Purple Blotch) unless the image clearly shows otherwise.`
+      : 'The crop type was not specified — first identify the crop (Paddy, Millet, vegetable, or other) before diagnosing.';
 
   const prompt = `
-    You are an expert agricultural plant pathologist specializing in crops grown in Odisha, India, specifically Paddy (Rice) and Millets (Ragi, Bajra, etc.).
+    You are an expert agricultural plant pathologist specializing in crops grown in Odisha, India — Paddy (Rice), Millets (Ragi, Bajra, etc.), and common vegetable crops (tomato, brinjal, onion, chilli, okra, etc.).
 
     ${cropHint}
     

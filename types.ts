@@ -5,7 +5,7 @@ export enum Language {
 
 export type Theme = 'light' | 'dark';
 
-export type CropType = 'paddy' | 'millet' | 'auto';
+export type CropType = 'paddy' | 'millet' | 'vegetable' | 'other' | 'auto';
 
 export interface DiagnosisResult {
   diagnosisName: string;
@@ -116,6 +116,56 @@ export interface FieldLocation {
   latitude: number;
   longitude: number;
   savedAt: number;
+}
+
+// ---- Live Mandi (Market) Prices — from the real data.gov.in Agmarknet dataset ----
+export interface MandiPriceRecord {
+  state: string;
+  district: string;
+  market: string;
+  commodity: string;
+  variety: string;
+  arrivalDate: string;
+  minPrice: number;
+  maxPrice: number;
+  modalPrice: number;
+}
+
+// ---- Community Q&A (Firestore-backed, district-level) ----
+export interface CommunityPost {
+  id: string;
+  district: string;
+  cropType: CropType;
+  question: string;
+  authorLabel: string; // e.g. "Farmer from Cuttack" — no real identity stored
+  createdAt: number;
+  replyCount: number;
+}
+
+export interface CommunityReply {
+  id: string;
+  postId: string;
+  text: string;
+  authorLabel: string;
+  createdAt: number;
+}
+
+// ---- Officer / FPO Dashboard (aggregated anonymized diagnosis reports) ----
+export interface DiagnosisReport {
+  id?: string;
+  district: string;
+  cropType: CropType;
+  diagnosisName: string;
+  severity: 'Low' | 'Medium' | 'High';
+  isHealthy: boolean;
+  createdAt: number;
+}
+
+export interface DistrictAggregate {
+  district: string;
+  totalReports: number;
+  diseaseCounts: Record<string, number>;
+  highSeverityCount: number;
 }
 
 export interface UIContent {
@@ -261,4 +311,50 @@ export interface UIContent {
   fieldMonitorSaveLocation: string;
   fieldMonitorSaved: string;
   fieldMonitorRoadmap: string;
+  // Multi-crop
+  cropVegetable: string;
+  cropOther: string;
+  cropOtherPlaceholder: string;
+  // Mandi prices
+  toolMandiPrices: string;
+  toolMandiPricesDesc: string;
+  mandiTitle: string;
+  mandiSearchPlaceholder: string;
+  mandiSearch: string;
+  mandiState: string;
+  mandiMarket: string;
+  mandiMinPrice: string;
+  mandiMaxPrice: string;
+  mandiModalPrice: string;
+  mandiDate: string;
+  mandiNoResults: string;
+  mandiNotConfigured: string;
+  mandiUseInCalculator: string;
+  mandiLoading: string;
+  // Community Q&A
+  toolCommunity: string;
+  toolCommunityDesc: string;
+  communityTitle: string;
+  communityAskPlaceholder: string;
+  communityPost: string;
+  communityReplies: string;
+  communityReplyPlaceholder: string;
+  communitySendReply: string;
+  communityEmpty: string;
+  communityNotConfigured: string;
+  communityDistrictRequired: string;
+  // Officer dashboard
+  toolOfficerDashboard: string;
+  toolOfficerDashboardDesc: string;
+  officerTitle: string;
+  officerTotalReports: string;
+  officerHighSeverity: string;
+  officerTopDiseases: string;
+  officerNoData: string;
+  shareDataToggle: string;
+  shareDataToggleDesc: string;
+  // SMS / IVR
+  smsFallbackTitle: string;
+  smsFallbackDesc: string;
+  smsFallbackNotConfigured: string;
 }

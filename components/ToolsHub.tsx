@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stethoscope, Mic, CalendarDays, Calculator, Satellite, ChevronRight } from 'lucide-react';
+import { Stethoscope, Mic, CalendarDays, Calculator, Satellite, ChevronRight, LineChart, Users, ClipboardList } from 'lucide-react';
 import { UIContent, Language } from '../types';
 import { Screen } from '../App';
 
@@ -40,6 +40,27 @@ const ToolsHub: React.FC<ToolsHubProps> = ({ content, lang, onNavigate }) => {
       title: content.toolProfitCalculator,
       desc: content.toolProfitCalculatorDesc,
       color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
+    },
+    {
+      screen: 'mandiPrices',
+      icon: <LineChart className="w-5 h-5" />,
+      title: content.toolMandiPrices,
+      desc: content.toolMandiPricesDesc,
+      color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
+    },
+    {
+      screen: 'community',
+      icon: <Users className="w-5 h-5" />,
+      title: content.toolCommunity,
+      desc: content.toolCommunityDesc,
+      color: 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/30 dark:text-fuchsia-300',
+    },
+    {
+      screen: 'officerDashboard',
+      icon: <ClipboardList className="w-5 h-5" />,
+      title: content.toolOfficerDashboard,
+      desc: content.toolOfficerDashboardDesc,
+      color: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200',
     },
     {
       screen: 'fieldMonitor',

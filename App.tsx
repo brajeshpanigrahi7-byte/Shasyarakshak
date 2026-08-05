@@ -13,13 +13,26 @@ import VoiceAssistantView from './components/VoiceAssistantView';
 import CropCalendarView from './components/CropCalendarView';
 import ProfitCalculatorView from './components/ProfitCalculatorView';
 import FieldMonitorView from './components/FieldMonitorView';
+import MandiPricesView from './components/MandiPricesView';
+import CommunityView from './components/CommunityView';
+import OfficerDashboardView from './components/OfficerDashboardView';
 import { analyzeCropImage } from './services/geminiService';
 import { getHistory, saveHistoryEntry, deleteHistoryEntry, clearHistory } from './services/historyService';
+import { getFarmProfile } from './services/farmProfileService';
+import { getShareOptIn, submitAnonymizedReport } from './services/outbreakService';
 import { DiagnosisResult, Language, CropType, HistoryEntry, Theme } from './types';
 import { UI_TRANSLATIONS } from './constants';
 import { Loader2, WifiOff } from 'lucide-react';
 
-export type Screen = 'farmDoctor' | 'voiceAssistant' | 'cropCalendar' | 'profitCalculator' | 'fieldMonitor';
+export type Screen =
+  | 'farmDoctor'
+  | 'voiceAssistant'
+  | 'cropCalendar'
+  | 'profitCalculator'
+  | 'fieldMonitor'
+  | 'mandiPrices'
+  | 'community'
+  | 'officerDashboard';
 
 enum AppState {
   IDLE,
@@ -73,14 +86,25 @@ const App: React.FC = () => {
     };
   }, []);
 
-  const handleImageSelected = async (base64Data: string, cropType: CropType) => {
+  const handleImageSelected = async (base64Data: string, cropType: CropType, cropName?: string) => {
     setAppState(AppState.ANALYZING);
     try {
-      const result = await analyzeCropImage(base64Data, cropType);
+      const result = await analyzeCropImage(base64Data, cropType, cropName);
       setAnalysisResult(result);
       setAppState(AppState.RESULT);
       const updated = await saveHistoryEntry(result, base64Data, cropType);
       setHistory(updated);
+
+      // If the farmer has opted in and set a district, silently contribute an
+      // anonymized (no image, no exact location) report for the district dashboard.
+      if (getShareOptIn()) {
+        const profile = getFarmProfile();
+        if (profile?.district) {
+          submitAnonymizedReport(profile.district, cropType, result).catch(() => {
+            // Non-fatal — the farmer's own diagnosis already succeeded either way.
+          });
+        }
+      }
     } catch (err: any) {
       console.error("Analysis Error:", err);
       
@@ -187,6 +211,9 @@ const App: React.FC = () => {
       case 'cropCalendar': return content.toolCropCalendar;
       case 'profitCalculator': return content.toolProfitCalculator;
       case 'fieldMonitor': return content.toolFieldMonitor;
+      case 'mandiPrices': return content.toolMandiPrices;
+      case 'community': return content.toolCommunity;
+      case 'officerDashboard': return content.toolOfficerDashboard;
     }
   };
 
@@ -197,6 +224,9 @@ const App: React.FC = () => {
       case 'cropCalendar': return <CropCalendarView content={content} lang={lang} />;
       case 'profitCalculator': return <ProfitCalculatorView content={content} lang={lang} />;
       case 'fieldMonitor': return <FieldMonitorView content={content} lang={lang} />;
+      case 'mandiPrices': return <MandiPricesView content={content} lang={lang} />;
+      case 'community': return <CommunityView content={content} lang={lang} />;
+      case 'officerDashboard': return <OfficerDashboardView content={content} lang={lang} />;
     }
   };
 
