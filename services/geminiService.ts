@@ -76,7 +76,7 @@ export async function analyzeCropImage(
   cropType: CropType = 'auto',
   cropName?: string
 ): Promise<DiagnosisResult> {
-  const model = "gemini-2.5-flash"; // Using standard flash for VQA/Analysis
+  const model = "gemini-3.6-flash"; // Current GA stable Flash model (multimodal) as of Aug 2026 — update if Google retires it
 
   const cropHint =
     cropType === 'paddy'
@@ -181,7 +181,7 @@ export async function generateFarmDoctorAdvisory(
   `;
 
   const response = await genAI.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
     contents: prompt,
     config: {
       responseMimeType: "application/json",
@@ -232,7 +232,7 @@ export async function generateCropCalendar(crop: string, sowingDateIso: string):
   `;
 
   const response = await genAI.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
     contents: prompt,
     config: {
       responseMimeType: "application/json",
@@ -299,7 +299,7 @@ export async function askFarmingQuestion(
   `;
 
   const response = await genAI.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
     contents: prompt,
     config: { temperature: 0.6 },
   });
