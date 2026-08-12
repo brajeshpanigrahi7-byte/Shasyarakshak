@@ -19,8 +19,8 @@ const PrivacyPolicyView: React.FC<PrivacyPolicyViewProps> = () => {
         <section>
           <h2 className="font-bold text-slate-800 dark:text-slate-100 mb-1">Who we are</h2>
           <p>
-            Shasyarakshak ("the App") is provided by [APP OWNER NAME]. If you have questions about this policy or
-            your data, contact us at [CONTACT EMAIL]. Our address is [BUSINESS ADDRESS].
+            Shasyarakshak ("the App") is provided by [BRAJESH PANIGRAHI]. If you have questions about this policy or
+            your data, contact us at [shasyarakshak@gmail.com]. Our address is [ROURKELA,ODISHA].
           </p>
         </section>
 
@@ -93,7 +93,7 @@ const PrivacyPolicyView: React.FC<PrivacyPolicyViewProps> = () => {
 
         <section>
           <h2 className="font-bold text-slate-800 dark:text-slate-100 mb-1">Contact</h2>
-          <p>[APP OWNER NAME] · [CONTACT EMAIL] · [BUSINESS ADDRESS]</p>
+          <p>[BRAJESH PANIGRAHI] · [shasyarakshak@gmail.com] · [ROURKELA , ODISHA]</p>
         </section>
       </div>
     </div>
