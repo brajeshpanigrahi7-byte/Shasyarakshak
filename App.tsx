@@ -16,10 +16,14 @@ import FieldMonitorView from './components/FieldMonitorView';
 import MandiPricesView from './components/MandiPricesView';
 import CommunityView from './components/CommunityView';
 import OfficerDashboardView from './components/OfficerDashboardView';
+import PrivacyPolicyView from './components/PrivacyPolicyView';
+import TermsOfServiceView from './components/TermsOfServiceView';
+import LoginView from './components/LoginView';
 import { analyzeCropImage } from './services/geminiService';
 import { getHistory, saveHistoryEntry, deleteHistoryEntry, clearHistory } from './services/historyService';
-import { getFarmProfile } from './services/farmProfileService';
+import { getFarmProfile, saveFarmProfile, syncProfileToCloud, loadProfileFromCloud } from './services/farmProfileService';
 import { getShareOptIn, submitAnonymizedReport } from './services/outbreakService';
+import { subscribeToAuthChanges, logout as logoutUser } from './services/authService';
 import { DiagnosisResult, Language, CropType, HistoryEntry, Theme } from './types';
 import { UI_TRANSLATIONS } from './constants';
 import { Loader2, WifiOff } from 'lucide-react';
@@ -32,7 +36,10 @@ export type Screen =
   | 'fieldMonitor'
   | 'mandiPrices'
   | 'community'
-  | 'officerDashboard';
+  | 'officerDashboard'
+  | 'privacyPolicy'
+  | 'terms'
+  | 'login';
 
 enum AppState {
   IDLE,
@@ -53,6 +60,8 @@ const App: React.FC = () => {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [viewingHistoryEntry, setViewingHistoryEntry] = useState<HistoryEntry | null>(null);
   const [isOffline, setIsOffline] = useState<boolean>(typeof navigator !== 'undefined' ? !navigator.onLine : false);
+  const [loggedInPhone, setLoggedInPhone] = useState<string | null>(null);
+  const [loggedInUid, setLoggedInUid] = useState<string | null>(null);
 
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window === 'undefined') return 'light';
@@ -68,6 +77,33 @@ const App: React.FC = () => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
     localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
+
+  // Track the logged-in farmer (if any) and sync their farm profile to/from the cloud
+  // so it follows them to a new phone. Local storage keeps working exactly the same
+  // for anyone who never logs in.
+  useEffect(() => {
+    const unsubscribe = subscribeToAuthChanges(async (user) => {
+      if (user) {
+        setLoggedInPhone(user.phoneNumber);
+        setLoggedInUid(user.uid);
+        try {
+          const cloudProfile = await loadProfileFromCloud(user.uid);
+          const localProfile = getFarmProfile();
+          if (cloudProfile && !localProfile) {
+            saveFarmProfile(cloudProfile);
+          } else if (localProfile) {
+            await syncProfileToCloud(user.uid, localProfile);
+          }
+        } catch {
+          // Non-fatal — local storage still has the profile either way.
+        }
+      } else {
+        setLoggedInPhone(null);
+        setLoggedInUid(null);
+      }
+    });
+    return unsubscribe;
+  }, []);
 
   // Load saved scans once on mount.
   useEffect(() => {
@@ -214,6 +250,9 @@ const App: React.FC = () => {
       case 'mandiPrices': return content.toolMandiPrices;
       case 'community': return content.toolCommunity;
       case 'officerDashboard': return content.toolOfficerDashboard;
+      case 'privacyPolicy': return 'Privacy Policy';
+      case 'terms': return 'Terms of Service';
+      case 'login': return content.loginTitle;
     }
   };
 
@@ -225,8 +264,11 @@ const App: React.FC = () => {
       case 'profitCalculator': return <ProfitCalculatorView content={content} lang={lang} />;
       case 'fieldMonitor': return <FieldMonitorView content={content} lang={lang} />;
       case 'mandiPrices': return <MandiPricesView content={content} lang={lang} />;
-      case 'community': return <CommunityView content={content} lang={lang} />;
+      case 'community': return <CommunityView content={content} lang={lang} loggedInPhone={loggedInPhone} />;
       case 'officerDashboard': return <OfficerDashboardView content={content} lang={lang} />;
+      case 'privacyPolicy': return <PrivacyPolicyView lang={lang} />;
+      case 'terms': return <TermsOfServiceView />;
+      case 'login': return <LoginView content={content} lang={lang} onLoggedIn={() => setActiveScreen(null)} />;
     }
   };
 
@@ -365,6 +407,9 @@ const App: React.FC = () => {
             theme={theme}
             onToggleTheme={toggleTheme}
             onClearData={handleClearAllData}
+            onNavigate={setActiveScreen}
+            loggedInPhone={loggedInPhone}
+            onLogout={() => logoutUser()}
           />
         )}
       </main>

@@ -311,6 +311,24 @@ export interface UIContent {
   fieldMonitorSaveLocation: string;
   fieldMonitorSaved: string;
   fieldMonitorRoadmap: string;
+  // Mobile login
+  loginTitle: string;
+  loginPhoneLabel: string;
+  loginPhonePlaceholder: string;
+  loginSendOtp: string;
+  loginSendingOtp: string;
+  loginOtpLabel: string;
+  loginOtpPlaceholder: string;
+  loginVerifyOtp: string;
+  loginVerifyingOtp: string;
+  loginSuccess: string;
+  loginError: string;
+  loginNotConfigured: string;
+  loginChangeNumber: string;
+  loggedInAs: string;
+  logoutButton: string;
+  loginFromSettings: string;
+  loginFromSettingsDesc: string;
   // Multi-crop
   cropVegetable: string;
   cropOther: string;

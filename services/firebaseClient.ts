@@ -1,5 +1,6 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getFirestore, Firestore } from 'firebase/firestore';
+import { getAuth, Auth } from 'firebase/auth';
 
 // Vite exposes any env var prefixed with VITE_ on import.meta.env automatically —
 // no vite.config.ts changes needed. Add these to .env.local (see README for setup).
@@ -18,15 +19,29 @@ export function isFirebaseConfigured(): boolean {
 
 let app: FirebaseApp | null = null;
 let db: Firestore | null = null;
+let auth: Auth | null = null;
+
+function ensureApp(): FirebaseApp | null {
+  if (!isFirebaseConfigured()) return null;
+  if (!app) {
+    app = initializeApp(firebaseConfig);
+  }
+  return app;
+}
 
 // Lazily initialize so the app doesn't crash for users who haven't set up
 // Firebase yet — Community Q&A and the Officer Dashboard simply show a
 // "not configured" state instead (see isFirebaseConfigured()).
 export function getDb(): Firestore | null {
-  if (!isFirebaseConfigured()) return null;
-  if (!db) {
-    app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-  }
+  const a = ensureApp();
+  if (!a) return null;
+  if (!db) db = getFirestore(a);
   return db;
+}
+
+export function getAuthInstance(): Auth | null {
+  const a = ensureApp();
+  if (!a) return null;
+  if (!auth) auth = getAuth(a);
+  return auth;
 }

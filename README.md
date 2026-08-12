@@ -49,6 +49,13 @@ This pulls real daily commodity prices from the Ministry of Agriculture's AGMARK
    ```
 5. Before going live, tighten your Firestore security rules (test mode allows open read/write for 30 days by default) — see https://firebase.google.com/docs/firestore/security/get-started
 
+### Mobile Number (OTP) Login (uses the same Firebase project as above)
+1. In the Firebase console, go to **Build → Authentication → Get started**
+2. Click the **Sign-in method** tab → **Phone** → toggle it **Enable** → **Save**
+3. Under **Authentication → Settings → Authorized domains**, add your Vercel domain (e.g. `brajesh-panigrahi.vercel.app`) so login works on your live site, not just localhost
+4. **Important — real cost warning**: Firebase's free "Spark" plan includes only a small number of free SMS verifications per month. Once you exceed that (or to reliably support many farmers), Google requires upgrading to the **Blaze (pay-as-you-go)** plan — you only pay for SMS actually sent, but it is a real per-SMS cost, not free at scale. Check current pricing at https://firebase.google.com/pricing before launching this to many users.
+5. No extra `.env.local` values are needed for login — it reuses the same 6 `VITE_FIREBASE_*` values from Community Q&A above.
+
 ## Features
 
 - **AI Crop Diagnosis** — photograph a Paddy/Millet/vegetable leaf and get an instant disease/pest diagnosis with organic & chemical remedies, in English and Odia.

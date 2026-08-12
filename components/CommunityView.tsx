@@ -9,13 +9,15 @@ import {
   isFirebaseConfigured,
 } from '../services/communityService';
 import { getFarmProfile } from '../services/farmProfileService';
+import { maskedPhoneLabel } from '../services/authService';
 
 interface CommunityViewProps {
   content: UIContent;
   lang: Language;
+  loggedInPhone?: string | null;
 }
 
-const CommunityView: React.FC<CommunityViewProps> = ({ content, lang }) => {
+const CommunityView: React.FC<CommunityViewProps> = ({ content, lang, loggedInPhone }) => {
   const isOdia = lang === Language.ODIA;
   const profile = getFarmProfile();
   const district = profile?.district?.trim() || '';
@@ -49,7 +51,12 @@ const CommunityView: React.FC<CommunityViewProps> = ({ content, lang }) => {
     if (!question.trim() || !district) return;
     setPosting(true);
     try {
-      await postQuestion(district, profile?.cropType || 'auto', question.trim(), isOdia ? `${district}ର ଚାଷୀ` : `Farmer from ${district}`);
+      const authorLabel = loggedInPhone
+        ? maskedPhoneLabel(loggedInPhone)
+        : isOdia
+        ? `${district}ର ଚାଷୀ`
+        : `Farmer from ${district}`;
+      await postQuestion(district, profile?.cropType || 'auto', question.trim(), authorLabel);
       setQuestion('');
       await load();
     } finally {
@@ -71,7 +78,8 @@ const CommunityView: React.FC<CommunityViewProps> = ({ content, lang }) => {
 
   const handleReply = async (postId: string) => {
     if (!replyText.trim()) return;
-    await postReply(postId, replyText.trim(), isOdia ? 'ଚାଷୀ' : 'Fellow farmer');
+    const authorLabel = loggedInPhone ? maskedPhoneLabel(loggedInPhone) : isOdia ? 'ଚାଷୀ' : 'Fellow farmer';
+    await postReply(postId, replyText.trim(), authorLabel);
     setReplyText('');
     const data = await fetchReplies(postId);
     setReplies((prev) => ({ ...prev, [postId]: data }));
