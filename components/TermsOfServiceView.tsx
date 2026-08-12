@@ -11,7 +11,7 @@ const TermsOfServiceView: React.FC = () => {
       <div className="space-y-5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
         <section>
           <h2 className="font-bold text-slate-800 dark:text-slate-100 mb-1">Acceptance</h2>
-          <p>By using Shasyarakshak ("the App"), provided by [APP OWNER NAME], you agree to these terms.</p>
+          <p>By using Shasyarakshak ("the App"), provided by [BRAJESH PANIGRAHI], you agree to these terms.</p>
         </section>
 
         <section>
@@ -71,7 +71,7 @@ const TermsOfServiceView: React.FC = () => {
 
         <section>
           <h2 className="font-bold text-slate-800 dark:text-slate-100 mb-1">Contact</h2>
-          <p>[APP OWNER NAME] · [CONTACT EMAIL] · [BUSINESS ADDRESS]</p>
+          <p>[BRAJESH PANIGRAHI] · [shasyarakshak@gmail.com] · [ROURKELA,ODISHA]</p>
         </section>
       </div>
     </div>
