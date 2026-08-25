@@ -1,5 +1,5 @@
 import React from 'react';
-import { Stethoscope, Mic, CalendarDays, Calculator, Satellite, ChevronRight, LineChart, Users, ClipboardList } from 'lucide-react';
+import { Stethoscope, Mic, CalendarDays, Calculator, Satellite, ChevronRight, LineChart, Users } from 'lucide-react';
 import { UIContent, Language } from '../types';
 import { Screen } from '../App';
 
@@ -54,13 +54,6 @@ const ToolsHub: React.FC<ToolsHubProps> = ({ content, lang, onNavigate }) => {
       title: content.toolCommunity,
       desc: content.toolCommunityDesc,
       color: 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/30 dark:text-fuchsia-300',
-    },
-    {
-      screen: 'officerDashboard',
-      icon: <ClipboardList className="w-5 h-5" />,
-      title: content.toolOfficerDashboard,
-      desc: content.toolOfficerDashboardDesc,
-      color: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200',
     },
     {
       screen: 'fieldMonitor',

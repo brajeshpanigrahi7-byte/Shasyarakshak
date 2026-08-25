@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MessageCircle, Send, Users, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { MessageCircle, Send, Users, AlertCircle, ChevronDown, ChevronUp, ShieldCheck } from 'lucide-react';
 import { UIContent, Language, CommunityPost, CommunityReply } from '../types';
 import {
   fetchDistrictPosts,
@@ -160,15 +160,30 @@ const CommunityView: React.FC<CommunityViewProps> = ({ content, lang, loggedInPh
             {expandedId === post.id && (
               <div className="border-t border-slate-100 dark:border-slate-700 p-4 bg-slate-50 dark:bg-slate-900/40">
                 <div className="space-y-2 mb-3">
-                  {(replies[post.id] || []).map((r) => (
-                    <div key={r.id} className="flex items-start gap-2">
-                      <MessageCircle className="w-3.5 h-3.5 text-slate-400 mt-1 shrink-0" />
-                      <div>
-                        <p className={`text-sm text-slate-700 dark:text-slate-200 ${isOdia ? 'font-odia' : ''}`}>{r.text}</p>
-                        <p className="text-[11px] text-slate-400">{r.authorLabel}</p>
+                  {(replies[post.id] || []).map((r) => {
+                    const isOfficer = r.authorRole === 'officer';
+                    return (
+                      <div key={r.id} className="flex items-start gap-2">
+                        {isOfficer ? (
+                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 mt-1 shrink-0" />
+                        ) : (
+                          <MessageCircle className="w-3.5 h-3.5 text-slate-400 mt-1 shrink-0" />
+                        )}
+                        <div>
+                          <p className={`text-sm text-slate-700 dark:text-slate-200 ${isOdia ? 'font-odia' : ''}`}>{r.text}</p>
+                          <p className="text-[11px] flex items-center gap-1 flex-wrap">
+                            <span className={isOfficer ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-slate-400'}>{r.authorLabel}</span>
+                            {isOfficer && (
+                              <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium ${isOdia ? 'font-odia' : ''}`}>
+                                <ShieldCheck className="w-2.5 h-2.5" />
+                                {content.officerReplyBadge}
+                              </span>
+                            )}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   {(replies[post.id] || []).length === 0 && (
                     <p className="text-xs text-slate-400">
                       {isOdia ? 'ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ଉତ୍ତର ନାହିଁ' : 'No replies yet'}
