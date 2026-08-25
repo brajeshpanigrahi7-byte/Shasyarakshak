@@ -147,6 +147,7 @@ export interface CommunityReply {
   postId: string;
   text: string;
   authorLabel: string;
+  authorRole?: 'farmer' | 'officer'; // 'officer' => verified KVK reply (badged in the UI)
   createdAt: number;
 }
 
@@ -166,6 +167,15 @@ export interface DistrictAggregate {
   totalReports: number;
   diseaseCounts: Record<string, number>;
   highSeverityCount: number;
+}
+
+// ---- Officer / KVK account (allowlist doc at officers/{uid}, admin-provisioned) ----
+// A signed-in user is treated as an officer ONLY if this record exists for their uid.
+export interface OfficerRecord {
+  uid: string;
+  email: string;
+  name: string;
+  district: string;
 }
 
 export interface UIContent {
@@ -371,6 +381,26 @@ export interface UIContent {
   officerNoData: string;
   shareDataToggle: string;
   shareDataToggleDesc: string;
+  // Officer / KVK login + console
+  officerLoginTitle: string;
+  officerLoginSubtitle: string;
+  officerLoginEmailLabel: string;
+  officerLoginEmailPlaceholder: string;
+  officerLoginPasswordLabel: string;
+  officerLoginPasswordPlaceholder: string;
+  officerLoginButton: string;
+  officerLoggingIn: string;
+  officerLoginError: string;
+  officerLoginNotOfficer: string;
+  officerLoginHint: string;
+  officerLoggedInAs: string;
+  officerOpenDashboard: string;
+  officerFromSettings: string;
+  officerFromSettingsDesc: string;
+  officerQuestionsTitle: string;
+  officerReplyPlaceholder: string;
+  officerReplyBadge: string;
+  officerNoQuestions: string;
   // SMS / IVR
   smsFallbackTitle: string;
   smsFallbackDesc: string;

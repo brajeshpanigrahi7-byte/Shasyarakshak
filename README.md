@@ -47,7 +47,7 @@ This pulls real daily commodity prices from the Ministry of Agriculture's AGMARK
    VITE_FIREBASE_MESSAGING_SENDER_ID=...
    VITE_FIREBASE_APP_ID=...
    ```
-5. Before going live, tighten your Firestore security rules (test mode allows open read/write for 30 days by default) — see https://firebase.google.com/docs/firestore/security/get-started
+5. Before going live, **replace test mode with the security rules shipped in this repo** — see **Officer / KVK Login + securing Firestore** below. Test mode allows open read/write and expires after 30 days.
 
 ### Mobile Number (OTP) Login (uses the same Firebase project as above)
 1. In the Firebase console, go to **Build → Authentication → Get started**
@@ -55,6 +55,37 @@ This pulls real daily commodity prices from the Ministry of Agriculture's AGMARK
 3. Under **Authentication → Settings → Authorized domains**, add your Vercel domain (e.g. `brajesh-panigrahi.vercel.app`) so login works on your live site, not just localhost
 4. **Important — real cost warning**: Firebase's free "Spark" plan includes only a small number of free SMS verifications per month. Once you exceed that (or to reliably support many farmers), Google requires upgrading to the **Blaze (pay-as-you-go)** plan — you only pay for SMS actually sent, but it is a real per-SMS cost, not free at scale. Check current pricing at https://firebase.google.com/pricing before launching this to many users.
 5. No extra `.env.local` values are needed for login — it reuses the same 6 `VITE_FIREBASE_*` values from Community Q&A above.
+
+### Officer / KVK Login + securing Firestore (uses the same Firebase project)
+
+KVK officials and agriculture officers log in with **email + password** (not phone OTP) to see the
+district disease aggregate **and** the farmers' actual questions, and to reply with a verified
+"KVK Officer" badge. There is no self-signup — officer accounts are **provisioned by you (the admin)**,
+which is what makes the verified badge trustworthy. Roles are enforced with no backend: a signed-in
+user is treated as an officer **only if** an allowlist document exists at `officers/{their-uid}`.
+
+**One-time provisioning per officer (≈ one per district; ~30 for Odisha):**
+1. Firebase console → **Build → Authentication → Sign-in method** → enable **Email/Password**.
+2. **Authentication → Users → Add user** → enter the officer's email + a temporary password → **Add user**.
+3. Copy that user's **UID** (from the Users table).
+4. **Build → Firestore Database → Start collection** `officers` → add a document whose **Document ID is
+   exactly that UID**, with fields:
+   ```
+   email    (string)  officer's email
+   name     (string)  e.g. "Dr. Sahoo, KVK Cuttack"
+   district (string)  e.g. "Cuttack"   ← the district they oversee
+   ```
+
+**Publish the security rules (replaces test mode — do this before real officers use it):**
+- Easiest: open [`firestore.rules`](firestore.rules) in this repo, copy its contents into
+  Firebase console → **Firestore → Rules** → **Publish**.
+- Or with the Firebase CLI: `npm i -g firebase-tools`, `firebase login`, then
+  `firebase deploy --only firestore:rules` (uses the [`firebase.json`](firebase.json) here).
+
+These rules keep the farmer flow login-optional (anyone can still read the forum and contribute
+anonymized reports) while making the sensitive aggregate **officer-only**, locking the `officers`
+allowlist to admin-only writes, and ensuring an "officer" reply can only be created by a real officer
+so the badge can't be forged.
 
 ## Features
 
@@ -65,7 +96,7 @@ This pulls real daily commodity prices from the Ministry of Agriculture's AGMARK
 - **Profit Calculator** — enter land area, expected yield, price, and costs to see projected profit and break-even numbers.
 - **Live Mandi Prices** *(needs a free data.gov.in key)* — real government commodity price data by market/state.
 - **Community Q&A** *(needs a free Firebase project)* — a district-level forum where farmers post questions and reply to each other.
-- **District Disease Dashboard** *(needs Firebase)* — an officer/FPO view aggregating anonymized diagnosis reports (crop, disease, severity — never images or exact location) that farmers opt in to share, from Settings.
+- **District Disease Dashboard + Officer/KVK Login** *(needs Firebase)* — KVK officers log in with email/password (admin-provisioned) to see anonymized diagnosis aggregates (crop, disease, severity — never images or exact location) that farmers opt in to share from Settings, plus their district's Community Q&A queue, which they can answer with a verified "KVK Officer" badge. Enforced with real Firestore security rules; see setup above.
 - **Field Monitor** — save your field's GPS location today; laid out as the foundation for future satellite-based vegetation/moisture monitoring.
 - **Scan History** — every diagnosis is saved locally for later reference.
 - **Local weather & spray advisory**, **dark mode**, **installable PWA** with basic offline app-shell caching.

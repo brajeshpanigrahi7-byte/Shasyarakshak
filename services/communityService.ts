@@ -74,12 +74,18 @@ export async function fetchReplies(postId: string): Promise<CommunityReply[]> {
       postId: data.postId,
       text: data.text,
       authorLabel: data.authorLabel,
+      authorRole: data.authorRole, // undefined for legacy/farmer replies — backward compatible
       createdAt: (data.createdAt as Timestamp)?.toMillis?.() ?? Date.now(),
     };
   });
 }
 
-export async function postReply(postId: string, text: string, authorLabel: string): Promise<void> {
+export async function postReply(
+  postId: string,
+  text: string,
+  authorLabel: string,
+  authorRole?: 'farmer' | 'officer'
+): Promise<void> {
   const db = getDb();
   if (!db) throw new Error('FIREBASE_NOT_CONFIGURED');
 
@@ -87,6 +93,9 @@ export async function postReply(postId: string, text: string, authorLabel: strin
     postId,
     text,
     authorLabel,
+    // Only persist authorRole when set — Firestore rejects `undefined` field values,
+    // and the rules gate 'officer' replies to real officers.
+    ...(authorRole ? { authorRole } : {}),
     createdAt: serverTimestamp(),
   });
   // Note: replyCount on the parent post is best-effort/display-only here; a Cloud Function

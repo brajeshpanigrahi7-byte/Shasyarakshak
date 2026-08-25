@@ -1,0 +1,59 @@
+rules_version = '2';
+
+// Shasyarakshak Firestore security rules.
+//
+// Design goal: lock down sensitive data to logged-in KVK officers WITHOUT breaking
+// the login-optional farmer flow. Farmers can still read the community forum and
+// contribute anonymized diagnosis reports without ever signing in.
+//
+// Roles are enforced with no backend: a signed-in user is an "officer" iff an
+// admin-provisioned doc exists at officers/{their-uid}. Clients can never write
+// that collection, so the allowlist can only grow from the Firebase console.
+//
+// To publish: Firebase Console -> Firestore -> Rules -> paste -> Publish
+// (or: firebase deploy --only firestore:rules). This REPLACES test mode.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOfficer() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/officers/$(request.auth.uid));
+    }
+
+    // Officer allowlist — admin-provisioned only. A user may read their own record
+    // (so the app can resolve their role); nobody may write from the client.
+    match /officers/{uid} {
+      allow read:  if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Anonymized diagnosis reports: any farmer may contribute (create), but the
+    // aggregate is sensitive so only officers may read it. Immutable once written.
+    match /diagnosis_reports/{id} {
+      allow create: if true;
+      allow read:   if isOfficer();
+      allow update, delete: if false;
+    }
+
+    // Community questions: world-readable and open to post (login-optional forum).
+    match /community_posts/{id} {
+      allow read:   if true;
+      allow create: if true;
+      allow update, delete: if false;
+    }
+
+    // Community replies: world-readable. Anyone may post a farmer reply, but a reply
+    // marked as an officer reply (authorRole == 'officer') may only be created by a
+    // real officer — so the verified KVK badge can't be forged.
+    match /community_replies/{id} {
+      allow read:   if true;
+      allow create: if request.resource.data.authorRole != 'officer' || isOfficer();
+      allow update, delete: if false;
+    }
+
+    // Farmer profiles: each logged-in farmer owns exactly their own document.
+    match /farmer_profiles/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}
