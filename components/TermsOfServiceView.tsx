@@ -6,12 +6,12 @@ const TermsOfServiceView: React.FC = () => {
   return (
     <div className="max-w-2xl mx-auto px-4 pt-6 pb-24">
       <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-1">Terms of Service</h1>
-      <p className="text-xs text-slate-400 mb-6">Last updated: [DATE]</p>
+      <p className="text-xs text-slate-400 mb-6">Last updated: 5th September</p>
 
       <div className="space-y-5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
         <section>
           <h2 className="font-bold text-slate-800 dark:text-slate-100 mb-1">Acceptance</h2>
-          <p>By using Shasyarakshak ("the App"), provided by [BRAJESH PANIGRAHI], you agree to these terms.</p>
+          <p>By using Shasyarakshak , you agree to these terms.</p>
         </section>
 
         <section>
@@ -52,14 +52,14 @@ const TermsOfServiceView: React.FC = () => {
 
         <section>
           <h2 className="font-bold text-slate-800 dark:text-slate-100 mb-1">Intellectual property</h2>
-          <p>The App's design, code, and branding belong to [APP OWNER NAME]. You retain rights to images you upload.</p>
+          <p>You retain rights to images you upload.</p>
         </section>
 
         <section>
           <h2 className="font-bold text-slate-800 dark:text-slate-100 mb-1">Limitation of liability</h2>
           <p>
-            The App is provided "as is," without warranty of any kind. To the maximum extent permitted by law,
-            [APP OWNER NAME] is not liable for crop loss, financial loss, or any other damages arising from reliance
+            The App is provided to the maximum extent permitted by law,
+            The Owner name is not liable for crop loss, financial loss, or any other damages arising from reliance
             on AI-generated content, weather data, or third-party information provided through the App.
           </p>
         </section>
@@ -71,7 +71,7 @@ const TermsOfServiceView: React.FC = () => {
 
         <section>
           <h2 className="font-bold text-slate-800 dark:text-slate-100 mb-1">Contact</h2>
-          <p>[BRAJESH PANIGRAHI] · [shasyarakshak@gmail.com] · [ROURKELA,ODISHA]</p>
+          <p>BRAJESH PANIGRAHI · shasyarakshak@gmail.com · ROURKELA,ODISHA</p>
         </section>
       </div>
     </div>
