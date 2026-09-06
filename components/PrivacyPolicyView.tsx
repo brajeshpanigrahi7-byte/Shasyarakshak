@@ -23,7 +23,7 @@ const PrivacyPolicyView: React.FC<PrivacyPolicyViewProps> = () => {
         <section>
           <h2 className="font-bold text-slate-800 dark:text-slate-100 mb-1">Who we are</h2>
           <p>
-            Shasyarakshak ("the App") is an independent, non-commercial project developed and operated by
+            Shasyarakshak is an independent, non-commercial project developed and operated by
             Brajesh Panigrahi, based in Rourkela, Odisha, India. For any question about this policy or your
             data, contact <a href="mailto:shasyarakshak@gmail.com">shasyarakshak@gmail.com</a>.
           </p>
