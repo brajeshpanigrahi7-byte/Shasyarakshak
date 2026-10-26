@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import Landing from './landing/Landing';
+
+// Load the app lazily so the landing page never depends on it (and ships a much smaller bundle).
+const App = React.lazy(() => import('./App'));
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -8,9 +11,18 @@ if (!rootElement) {
 }
 
 const root = ReactDOM.createRoot(rootElement);
+// "/" is the marketing landing page; "/app" is the farmer-facing app.
+const isApp = window.location.pathname.replace(/\/+$/, '').startsWith('/app');
+
 root.render(
   <React.StrictMode>
-    <App />
+    {isApp ? (
+      <React.Suspense fallback={null}>
+        <App />
+      </React.Suspense>
+    ) : (
+      <Landing />
+    )}
   </React.StrictMode>
 );
 
