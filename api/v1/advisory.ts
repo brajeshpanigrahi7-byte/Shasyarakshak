@@ -34,4 +34,4 @@ export default handler(async ({ body }) => {
     };
   }
   return generateFarmDoctorAdvisory(profile, weather);
-}, { limitPerMinute: 10, anonLimitPerMinute: 5 });
+}, { limitPerMinute: 10, requireAuth: true });

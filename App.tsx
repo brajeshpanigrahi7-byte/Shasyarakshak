@@ -20,11 +20,12 @@ import PrivacyPolicyView from './components/PrivacyPolicyView';
 import TermsOfServiceView from './components/TermsOfServiceView';
 import LoginView from './components/LoginView';
 import OfficerLoginView from './components/OfficerLoginView';
+import AuthGate from './components/AuthGate';
 import { analyzeCropImage } from './services/geminiService';
 import { getHistory, saveHistoryEntry, deleteHistoryEntry, clearHistory } from './services/historyService';
 import { getFarmProfile, saveFarmProfile, syncProfileToCloud, loadProfileFromCloud } from './services/farmProfileService';
 import { getShareOptIn, submitAnonymizedReport } from './services/outbreakService';
-import { subscribeToAuthChanges, logout as logoutUser } from './services/authService';
+import { subscribeToAuthChanges, logout as logoutUser, isFirebaseConfigured } from './services/authService';
 import { fetchOfficerRecord } from './services/officerService';
 import { DiagnosisResult, Language, CropType, HistoryEntry, Theme, OfficerRecord } from './types';
 import { UI_TRANSLATIONS } from './constants';
@@ -66,6 +67,8 @@ const App: React.FC = () => {
   const [loggedInPhone, setLoggedInPhone] = useState<string | null>(null);
   const [loggedInUid, setLoggedInUid] = useState<string | null>(null);
   const [officer, setOfficer] = useState<OfficerRecord | null>(null);
+  // 'loading' until Firebase reports the saved session; then 'in' or 'out'. Drives the mandatory sign-in gate.
+  const [authState, setAuthState] = useState<'loading' | 'in' | 'out'>('loading');
 
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window === 'undefined') return 'light';
@@ -93,29 +96,44 @@ const App: React.FC = () => {
         setOfficer(null);
         setLoggedInPhone(null);
         setLoggedInUid(null);
+        setAuthState('out');
         return;
       }
 
-      setLoggedInUid(user.uid);
-
       let officerRecord: OfficerRecord | null = null;
+      let lookupFailed = false;
       try {
         officerRecord = await fetchOfficerRecord(user.uid);
       } catch {
-        officerRecord = null; // Non-fatal — treat as a non-officer if the lookup fails.
+        lookupFailed = true; // Could not verify the role (network/rules) — do not grant access.
       }
 
       if (officerRecord) {
         // KVK officer — not a farmer, so keep the farmer UI (loggedInPhone) untouched.
+        setLoggedInUid(user.uid);
         setOfficer(officerRecord);
         setLoggedInPhone(null);
+        setAuthState('in');
+        return;
+      }
+
+      // Farmers sign in with a mobile number. An email/password account that is not on the
+      // officer allowlist is not a farmer, so it must not get into the app.
+      if (!user.phoneNumber) {
+        setOfficer(null);
+        setLoggedInPhone(null);
+        setLoggedInUid(null);
+        setAuthState('out');
+        if (!lookupFailed) logoutUser().catch(() => {});
         return;
       }
 
       // Ordinary farmer path (phone OTP) — sync their farm profile to/from the cloud
       // so it follows them to a new phone.
+      setLoggedInUid(user.uid);
       setOfficer(null);
       setLoggedInPhone(user.phoneNumber);
+      setAuthState('in');
       try {
         const cloudProfile = await loadProfileFromCloud(user.uid);
         const localProfile = getFarmProfile();
@@ -304,6 +322,23 @@ const App: React.FC = () => {
       case 'login': return <LoginView content={content} lang={lang} onLoggedIn={() => setActiveScreen(null)} />;
     }
   };
+
+  // Mandatory sign-in: nobody sees the app until they sign in or sign up. If Firebase is not
+  // configured at all, login is impossible, so fall through to the app instead of locking everyone out.
+  const gated = isFirebaseConfigured() && authState !== 'in';
+
+  if (gated) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
+        <Header lang={lang} content={content} onLangChange={setLang} />
+        {authState === 'loading' ? (
+          <div className="flex justify-center pt-24"><Loader2 className="w-10 h-10 text-emerald-600 animate-spin" /></div>
+        ) : (
+          <AuthGate content={content} lang={lang} onOfficerLoggedIn={() => setActiveScreen('officerDashboard')} />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">

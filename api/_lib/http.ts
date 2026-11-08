@@ -7,6 +7,7 @@ interface Options {
   methods?: string[];
   limitPerMinute?: number; // per signed-in user
   anonLimitPerMinute?: number; // per IP when not signed in
+  requireAuth?: boolean; // reject callers without a valid Firebase ID token
 }
 
 interface Ctx {
@@ -42,6 +43,7 @@ export function handler(fn: (ctx: Ctx) => Promise<unknown>, opts: Options = {}) 
       if (!methods.includes(req.method || '')) throw new ApiError(405, 'METHOD_NOT_ALLOWED', 'Method not allowed.');
 
       const user = await optionalUser(req.headers.authorization);
+      if (opts.requireAuth && !user) throw new ApiError(401, 'UNAUTHENTICATED', 'Please sign in to continue.');
       const ip = String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown').split(',')[0].trim();
       const route = req.url?.split('?')[0] || 'api';
       const key = user ? `u:${user.uid}:${route}` : `ip:${ip}:${route}`;

@@ -16,4 +16,4 @@ export default handler(async ({ body }) => {
     timestamp: 0,
   }));
   return { answer: await askFarmingQuestion(question, lang, history) };
-}, { limitPerMinute: 20, anonLimitPerMinute: 8 });
+}, { limitPerMinute: 20, requireAuth: true });

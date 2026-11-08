@@ -5,6 +5,15 @@ import { ApiError } from '../api/_lib/errors';
 import { optionalUser, requireUser } from '../api/_lib/auth';
 import { handler } from '../api/_lib/http';
 
+// Fake Firebase token verification: only the token 'good' is valid.
+vi.mock('jose', () => ({
+  createRemoteJWKSet: () => ({}),
+  jwtVerify: async (token: string) => {
+    if (token === 'good') return { payload: { sub: 'user-1', phone_number: '+910000000000' } };
+    throw new Error('invalid');
+  },
+}));
+
 const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 0x10, 0x4a, 0x46, 0x49, 0x46, 0, 1]).toString('base64');
 const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]).toString('base64');
 const exe = Buffer.from('MZ\x90\x00\x03\x00\x00\x00\x04\x00\x00\x00').toString('base64');
@@ -110,13 +119,13 @@ describe('handler envelope', () => {
 });
 
 describe('route handlers (no Gemini key configured)', () => {
-  const call = async (mod: string, body: any, method = 'POST') => {
+  const call = async (mod: string, body: any, method = 'POST', authed = true) => {
     const { default: h } = await import(mod);
     const res = mockRes();
-    await h(mockReq({ method, body }) as any, res);
+    await h(mockReq({ method, body, headers: authed ? { authorization: 'Bearer good' } : {} }) as any, res);
     return res;
   };
-  beforeEach(() => { delete process.env.GEMINI_API_KEY; resetRateLimits(); });
+  beforeEach(() => { delete process.env.GEMINI_API_KEY; process.env.FIREBASE_PROJECT_ID = 'demo'; resetRateLimits(); });
 
   it('diagnosis: rejects missing/invalid image before touching the AI', async () => {
     expect((await call('../api/v1/diagnosis', {})).code).toBe(400);
@@ -137,9 +146,22 @@ describe('route handlers (no Gemini key configured)', () => {
     expect((await call('../api/v1/assistant', { question: '' })).code).toBe(400);
     expect((await call('../api/v1/assistant', { question: 'hi', history: 'x' })).code).toBe(400);
   });
-  it('health reports config without exposing values', async () => {
+  it('AI endpoints reject signed-out callers with 401', async () => {
+    for (const m of ['diagnosis', 'advisory', 'calendar', 'assistant']) {
+      const r = await call(`../api/v1/${m}`, { image: jpeg, crop: 'x', question: 'x' }, 'POST', false);
+      expect(r.code).toBe(401);
+      expect(r.body.error.code).toBe('UNAUTHENTICATED');
+    }
+  });
+  it('AI endpoints reject a forged token with 401', async () => {
+    const { default: h } = await import('../api/v1/assistant');
+    const res = mockRes();
+    await h(mockReq({ body: { question: 'hi' }, headers: { authorization: 'Bearer forged' } }) as any, res);
+    expect(res.code).toBe(401);
+  });
+  it('health stays public and reports config without exposing values', async () => {
     process.env.GEMINI_API_KEY = 'secret-value';
-    const r = await call('../api/v1/health', {}, 'GET');
+    const r = await call('../api/v1/health', {}, 'GET', false);
     expect(r.body.data.integrations.gemini).toBe(true);
     expect(JSON.stringify(r.body)).not.toContain('secret-value');
   });

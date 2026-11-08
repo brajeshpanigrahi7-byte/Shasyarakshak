@@ -8,4 +8,4 @@ export default handler(async ({ body }) => {
   const cropType = oneOf(body.cropType ?? 'auto', 'cropType', ['auto', 'paddy', 'millet', 'vegetable'] as const);
   const cropName = str(body.cropName, 'cropName', 60, { required: false });
   return analyzeCropImage(base64, cropType, cropName || undefined, mime);
-}, { limitPerMinute: 10, anonLimitPerMinute: 5 });
+}, { limitPerMinute: 10, requireAuth: true });

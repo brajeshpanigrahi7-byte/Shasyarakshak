@@ -383,6 +383,12 @@ export interface UIContent {
   shareDataToggleDesc: string;
   // Officer / KVK login + console
   officerLoginTitle: string;
+  gateTitle: string;
+  gateSubtitle: string;
+  gateFarmer: string;
+  gateFarmerHint: string;
+  gateOfficer: string;
+  gateOfficerHint: string;
   officerLoginSubtitle: string;
   officerLoginEmailLabel: string;
   officerLoginEmailPlaceholder: string;
