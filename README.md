@@ -108,3 +108,11 @@ so the badge can't be forged.
 - Deeper multi-crop coverage (currently: Paddy, Millet, and free-text vegetable crops)
 - Firestore Cloud Functions to keep reply counts and moderation fully server-side
 
+
+## Backend API (`/api/v1`)
+
+AI calls run on Vercel serverless functions so the Gemini key is never sent to the browser.
+Set `GEMINI_API_KEY` (and optionally `FIREBASE_PROJECT_ID`) in Vercel → Settings → Environment Variables — see `.env.example`.
+Endpoints: `POST /api/v1/diagnosis | advisory | calendar | assistant`, `GET /api/v1/health`.
+Local dev: `npm run dev` serves only the UI; to exercise AI locally use `npx vercel dev` with the env vars set.
+Tests: `npm test`. Architecture and findings: `docs/AUDIT.md`.
